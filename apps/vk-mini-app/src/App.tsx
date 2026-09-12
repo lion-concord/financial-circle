@@ -25,7 +25,7 @@ const INITIAL_STATE: AppState = {
   balance: 24500,
   hold: 8700,
   referrals: 12,
-  subscription: "Премиум",
+  subscription: "Инвестор",
   payouts: [],
 };
 
@@ -37,15 +37,15 @@ const TARIFFS = [
     accent: "blue",
   },
   {
-    name: "Премиум",
-    price: 2990,
-    description: "Максимум преимуществ и повышенный кешбэк",
+    name: "Инвестор",
+    price: 2500,
+    description: "Расширенные возможности и повышенный кешбэк",
     accent: "gold",
   },
   {
-    name: "Партнёр",
-    price: 7990,
-    description: "Для активного развития реферальной сети",
+    name: "Инвестор Про",
+    price: 4900,
+    description: "Максимум возможностей и развитие партнёрской сети",
     accent: "purple",
   },
 ];
@@ -291,7 +291,7 @@ function ClubScreen({
       <div className="tariff-list">
         {TARIFFS.map((tariff) => (
           <article className={`tariff-card ${tariff.accent}`} key={tariff.name}>
-            {tariff.name === "Премиум" && <div className="popular">ПОПУЛЯРНЫЙ</div>}
+            {tariff.name === "Инвестор" && <div className="popular">ПОПУЛЯРНЫЙ</div>}
             <div className="tariff-top">
               <span className="tariff-icon">✦</span>
               <h3>{tariff.name}</h3>

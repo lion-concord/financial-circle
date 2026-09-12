@@ -97,3 +97,71 @@ p { color: #95979f; line-height: 1.5; }
   .balance-value { font-size: 31px; }
   .action-card { padding: 13px; }
 }
+
+/* Принудительный тёмный фон поверх стандартных стилей VKUI */
+html,
+body,
+#root,
+.vkuiAppRoot,
+.vkuiSplitLayout,
+.vkuiSplitCol,
+.vkuiView,
+.vkuiPanel,
+.vkuiPanel__in {
+  min-height: 100%;
+  background: #0b0c0f !important;
+  color: #f7f7f5 !important;
+}
+
+.vkuiPanel__in {
+  padding-bottom: 0 !important;
+}
+
+.vkuiPanelHeader,
+.vkuiPanelHeader__in,
+.vkuiPanelHeader__content {
+  color: #f7f7f5 !important;
+  background: #0b0c0f !important;
+}
+
+.vkuiPanelHeader__content {
+  font-weight: 700 !important;
+}
+
+.vkuiGroup,
+.vkuiGroup__inner,
+.vkuiCell,
+.vkuiSimpleCell {
+  color: #f7f7f5 !important;
+  background: transparent !important;
+}
+
+.vkuiSeparator {
+  background: #25262b !important;
+}
+
+.tariff-card h3,
+.tariff-card p,
+.tariff-card .tariff-price,
+.tariff-card .tariff-price small,
+.current-plan strong,
+.profile-card h2,
+.operation b {
+  color: #f7f7f5 !important;
+}
+
+.tariff-card p,
+.tariff-price small,
+.profile-card p {
+  color: #999ba3 !important;
+}
+
+.gold-button {
+  color: #15120c !important;
+  background: #d9b866 !important;
+}
+
+.gold-button:hover {
+  background: #ebcc78 !important;
+}
+
