@@ -1,0 +1,14 @@
+{
+  "name": "financial-circle",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*",
+    "server"
+  ],
+  "scripts": {
+    "dev": "echo \"use -w <workspace> or run per package\"",
+    "build": "npm run build -ws --if-present",
+    "typecheck": "npm run typecheck -ws --if-present"
+  }
+}
