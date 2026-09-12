@@ -10,16 +10,16 @@
   },
   "dependencies": {
     "@vkontakte/icons": "^3.70.0",
-    "@vkontakte/vk-bridge": "^2.15.0",
-    "@vkontakte/vkui": "^7.1.0",
+    "@vkontakte/vk-bridge": "^2.15.12",
+    "@vkontakte/vkui": "^7.11.7",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
-    "@types/react": "^18.3.12",
-    "@types/react-dom": "^18.3.1",
-    "@vitejs/plugin-react": "^4.3.3",
-    "typescript": "^5.6.3",
-    "vite": "^5.4.10"
+    "@types/react": "^18.3.31",
+    "@types/react-dom": "^18.3.7",
+    "@vitejs/plugin-react": "^4.7.0",
+    "typescript": "^5.9.3",
+    "vite": "^5.4.21"
   }
 }
