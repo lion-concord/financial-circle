@@ -9,16 +9,26 @@ import {
   SplitLayout,
   View,
 } from "@vkontakte/vkui";
+import vkBridge from "@vkontakte/vk-bridge";
 import "./styles.css";
 
 type Tab = "home" | "club" | "referrals" | "profile";
+
+type OperationItem = {
+  id: string;
+  icon: string;
+  title: string;
+  date: string;
+  amount: string;
+  pending?: boolean;
+};
 
 type AppState = {
   balance: number;
   hold: number;
   referrals: number;
   subscription: string | null;
-  payouts: number[];
+  operations: OperationItem[];
 };
 
 const INITIAL_STATE: AppState = {
@@ -26,7 +36,11 @@ const INITIAL_STATE: AppState = {
   hold: 8700,
   referrals: 12,
   subscription: "Инвестор",
-  payouts: [],
+  operations: [
+    { id: "1", icon: "◈", title: "Партнёрское начисление", date: "Сегодня, 12:40", amount: "+1 250 ₽" },
+    { id: "2", icon: "✦", title: "Кешбэк клуба", date: "Вчера, 18:15", amount="+480 ₽" },
+    { id: "3", icon: "◷", title: "Начисление в холд", date: "12 сентября", amount="+2 100 ₽", pending: true },
+  ],
 };
 
 const TARIFFS = [
@@ -67,6 +81,9 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<Tab>("home");
   const [state, setState] = useState<AppState>(readState);
   const [notice, setNotice] = useState("");
+  const [isPayoutModalOpen, setIsPayoutModalOpen] = useState(false);
+  const [payoutAmount, setPayoutAmount] = useState("");
+  const [vkUser, setVkUser] = useState<{ name: string; photo?: string; id?: number } | null>(null);
 
   useEffect(() => {
     localStorage.setItem("financial-circle-state", JSON.stringify(state));
@@ -77,6 +94,24 @@ export default function App() {
     const timer = window.setTimeout(() => setNotice(""), 2800);
     return () => window.clearTimeout(timer);
   }, [notice]);
+
+  useEffect(() => {
+    vkBridge.send("VKWebAppInit").catch(() => {});
+    vkBridge
+      .send("VKWebAppGetUserInfo")
+      .then((data) => {
+        if (data && data.first_name) {
+          setVkUser({
+            name: `${data.first_name} ${data.last_name || ""}`.trim(),
+            photo: data.photo_200,
+            id: data.id,
+          });
+        }
+      })
+      .catch(() => {
+        // Если не в ВК, останется дефолтный профиль
+      });
+  }, []);
 
   const total = useMemo(() => state.balance + state.hold, [state]);
 
@@ -90,7 +125,9 @@ export default function App() {
   }
 
   async function copyReferral() {
-    const link = "https://vk.com/app_financial_circle?ref=fc_demo_2481";
+    const appId = "53123456"; // Замените при необходимости на реальный ID приложения из ВК
+    const userId = vkUser?.id || "2481";
+    const link = `https://vk.com/app${appId}?ref=fc_${userId}`;
 
     try {
       await navigator.clipboard.writeText(link);
@@ -100,18 +137,41 @@ export default function App() {
     }
   }
 
-  function requestPayout() {
-    if (state.balance < 1000) {
+  function submitPayout(e: React.FormEvent) {
+    e.preventDefault();
+    const amount = Number(payoutAmount);
+
+    if (isNaN(amount) || amount <= 0) {
+      setNotice("Введите корректную сумму");
+      return;
+    }
+    if (amount < 1000) {
       setNotice("Минимальная сумма выплаты — 1 000 ₽");
       return;
     }
+    if (amount > state.balance) {
+    setNotice("Сумма превышает доступный баланс");
+      return;
+    }
+
+    const newOp: OperationItem = {
+      id: Date.now().toString(),
+      icon: "↗",
+      title: "Заявка на выплату",
+      date: "Только что",
+      amount: `-${amount.toLocaleString("ru-RU")} ₽`,
+      pending: true,
+    };
 
     setState((current) => ({
       ...current,
-      payouts: [...current.payouts, current.balance],
-      balance: 0,
+      balance: current.balance - amount,
+      operations: [newOp, ...current.operations],
     }));
-    setNotice("Заявка на выплату создана");
+
+    setPayoutAmount("");
+    setIsPayoutModalOpen(false);
+    setNotice("Заявка на выплату создана успешно");
   }
 
   return (
@@ -136,7 +196,7 @@ export default function App() {
                       <HomeScreen
                         state={state}
                         total={total}
-                        onPayout={requestPayout}
+                        onOpenPayout={() => setIsPayoutModalOpen(true)}
                         onOpenClub={() => setActiveTab("club")}
                       />
                     )}
@@ -157,8 +217,9 @@ export default function App() {
 
                     {activeTab === "profile" && (
                       <ProfileScreen
+                        user={vkUser}
                         subscription={state.subscription}
-                        payouts={state.payouts}
+                        operationsCount={state.operations.length}
                         onReset={() => {
                           setState(INITIAL_STATE);
                           setNotice("Локальные данные сброшены");
@@ -193,6 +254,39 @@ export default function App() {
                       onClick={() => setActiveTab("profile")}
                     />
                   </nav>
+
+                  {isPayoutModalOpen && (
+                    <div className="modal-backdrop">
+                      <div className="modal-card">
+                        <h3>Запрос выплаты</h3>
+                        <p>Доступно: {formatMoney(state.balance)} (мин. 1 000 ₽)</p>
+                        <form onSubmit={submitPayout}>
+                          <input
+                            type="number"
+                            className="modal-input"
+                            placeholder="Сумма в рублях"
+                            value={payoutAmount}
+                            onChange={(e) => setPayoutAmount(e.target.value)}
+                            autoFocus
+                            min="1000"
+                            max={state.balance}
+                          />
+                          <div className="modal-buttons">
+                            <button
+                              type="button"
+                              className="outline-button"
+                              onClick={() => setIsPayoutModalOpen(false)}
+                            >
+                              Отмена
+                            </button>
+                            <button type="submit" className="gold-button">
+                              Создать заявку
+                            </button>
+                          </div>
+                        </form>
+                      </div>
+                    </div>
+                  )}
                 </Panel>
               </View>
             </SplitCol>
@@ -206,12 +300,12 @@ export default function App() {
 function HomeScreen({
   state,
   total,
-  onPayout,
+  onOpenPayout,
   onOpenClub,
 }: {
   state: AppState;
   total: number;
-  onPayout: () => void;
+  onOpenPayout: () => void;
   onOpenClub: () => void;
 }) {
   return (
@@ -242,7 +336,7 @@ function HomeScreen({
           <h2>Быстрые действия</h2>
         </div>
         <div className="actions-grid">
-          <button className="action-card action-primary" onClick={onPayout}>
+          <button className="action-card action-primary" onClick={onOpenPayout}>
             <span className="action-icon">↗</span>
             <b>Вывести</b>
             <small>На карту или счёт</small>
@@ -258,12 +352,19 @@ function HomeScreen({
       <section className="section">
         <div className="section-heading">
           <h2>Последние операции</h2>
-          <span className="muted">Все</span>
+          <span className="muted">{state.operations.length} всего</span>
         </div>
         <div className="operation-list">
-          <Operation icon="◈" title="Партнёрское начисление" date="Сегодня, 12:40" amount="+1 250 ₽" />
-          <Operation icon="✦" title="Кешбэк клуба" date="Вчера, 18:15" amount="+480 ₽" />
-          <Operation icon="◷" title="Начисление в холд" date="12 сентября" amount="+2 100 ₽" pending />
+          {state.operations.map((op) => (
+            <Operation
+              key={op.id}
+              icon={op.icon}
+              title={op.title}
+              date={op.date}
+              amount={op.amount}
+              pending={op.pending}
+            />
+          ))}
         </div>
       </section>
     </>
@@ -326,9 +427,9 @@ function ReferralsScreen({
         </div>
       </section>
       <section className="section">
-        <div className="section-heading"><h2>Ваша ссылка</h2></div>
+        <div className="section-heading"><h2>Ваша реферальная ссылка</h2></div>
         <div className="referral-box">
-          <span>vk.com/app_financial_circle…</span>
+          <span>Нажмите кнопку справа для копирования</span>
           <button onClick={onCopy}>Копировать</button>
         </div>
       </section>
@@ -345,23 +446,41 @@ function ReferralsScreen({
 }
 
 function ProfileScreen({
+  user,
   subscription,
-  payouts,
+  operationsCount,
   onReset,
 }: {
+  user: { name: string; photo?: string; id?: number } | null;
   subscription: string | null;
-  payouts: number[];
+  operationsCount: number;
   onReset: () => void;
 }) {
+  const displayName = user?.name || "Алексей Иванов";
+  const displayId = user?.id ? `VK ID · ${user.id}` : "VK ID · 24812481";
+  const initials = displayName
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+
   return (
     <>
       <PageTitle title="Профиль" subtitle="Ваш аккаунт в Финансовом Круге" />
       <section className="profile-card">
-        <div className="avatar">АИ</div>
-        <div><h2>Алексей Иванов</h2><p>VK ID · 24812481</p></div>
+        {user?.photo ? (
+          <img src={user.photo} alt="Avatar" className="avatar-img" />
+        ) : (
+          <div className="avatar">{initials}</div>
+        )}
+        <div>
+          <h2>{displayName}</h2>
+          <p>{displayId}</p>
+        </div>
       </section>
       <div className="profile-row"><span>Тариф</span><b>{subscription ?? "Не подключён"}</b></div>
-      <div className="profile-row"><span>Заявок на выплату</span><b>{payouts.length}</b></div>
+      <div className="profile-row"><span>Всего операций</span><b>{operationsCount}</b></div>
       <button className="outline-button" onClick={onReset}>Сбросить локальные данные</button>
       <p className="disclaimer">Демонстрационный режим. Данные сохранены только на этом устройстве.</p>
     </>
