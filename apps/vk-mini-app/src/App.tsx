@@ -19,7 +19,7 @@ type OperationItem = {
   icon: string;
   title: string;
   date: string;
-  amount: string;
+  amount: number;
   pending?: boolean;
 };
 
@@ -37,9 +37,9 @@ const INITIAL_STATE: AppState = {
   referrals: 12,
   subscription: "Инвестор",
   operations: [
-    { id: "1", icon: "◈", title: "Партнёрское начисление", date: "Сегодня, 12:40", amount: "+1 250 ₽" },
-    { id: "2", icon: "✦", title: "Кешбэк клуба", date: "Вчера, 18:15", amount="+480 ₽" },
-    { id: "3", icon: "◷", title: "Начисление в холд", date: "12 сентября", amount="+2 100 ₽", pending: true },
+    { id: "1", icon: "◈", title: "Партнёрское начисление", date: "Сегодня, 12:40", amount: 1250 },
+    { id: "2", icon: "✦", title: "Кешбэк клуба", date: "Вчера, 18:15", amount: 480 },
+    { id: "3", icon: "◷", title: "Начисление в холд", date: "12 сентября", amount: 2100, pending: true },
   ],
 };
 
@@ -159,7 +159,7 @@ export default function App() {
       icon: "↗",
       title: "Заявка на выплату",
       date: "Только что",
-      amount: `-${amount.toLocaleString("ru-RU")} ₽`,
+      amount: -amount,
       pending: true,
     };
 
@@ -505,10 +505,23 @@ function Operation({
   icon: string;
   title: string;
   date: string;
-  amount: string;
+  amount: number;
   pending?: boolean;
 }) {
-  return <div className="operation"><span className="operation-icon">{icon}</span><div><b>{title}</b><small>{date}</small></div><strong className={pending ? "pending" : ""}>{amount}</strong></div>;
+  const isExpense = amount < 0;
+  const signAmount = `${isExpense ? "-" : ""}${formatMoney(Math.abs(amount))}`;
+  return (
+    <div className="operation">
+      <span className="operation-icon">{icon}</span>
+      <div>
+        <b>{title}</b>
+        <small>{date}</small>
+      </div>
+      <strong className={pending ? "pending" : ""}>
+        {signAmount}
+      </strong>
+    </div>
+  );
 }
 
 function NavButton({
