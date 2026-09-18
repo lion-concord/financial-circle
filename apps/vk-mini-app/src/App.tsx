@@ -10,6 +10,7 @@ import {
   View,
 } from "@vkontakte/vkui";
 import vkBridge from "@vkontakte/vk-bridge";
+import { api, setToken } from "./api";
 import "./styles.css";
 
 type Tab = "home" | "club" | "referrals" | "profile";
@@ -94,6 +95,52 @@ export default function App() {
     const timer = window.setTimeout(() => setNotice(""), 2800);
     return () => window.clearTimeout(timer);
   }, [notice]);
+
+  useEffect(() => {
+    vkBridge.send("VKWebAppInit").catch(() => {});
+    vkBridge
+      .send("VKWebAppGetUserInfo")
+      .then(async (data) => {
+        if (!data || !data.first_name) return;
+        const user = {
+          name: (data.first_name + " " + (data.last_name || "")).trim(),
+          photo: data.photo_200,
+          id: data.id,
+        };
+        setVkUser(user);
+        try {
+          if (user.id) {
+            const auth = await api.authVK(user.id);
+            if (auth && auth.token) setToken(auth.token);
+            const me = await api.getMe();
+            setState((current) => ({
+              ...current,
+              balance: Number(me.balance ?? current.balance),
+              hold: Number(me.hold ?? current.hold),
+              referrals: Number(me.referrals ?? current.referrals),
+              subscription: me.subscription ?? current.subscription,
+            }));
+            try {
+              const ops = await api.getOperations();
+              if (Array.isArray(ops)) {
+                setState((current) => ({
+                  ...current,
+                  operations: ops.map((o, idx) => ({
+                    id: String(o.id ?? o._id ?? idx),
+                    icon: String(o.icon ?? "◈"),
+                    title: String(o.title ?? "Операция"),
+                    date: String(o.date ?? ""),
+                    amount: Number(o.amount ?? 0),
+                    pending: Boolean(o.pending ?? false),
+                  })),
+                }));
+              }
+            } catch {}
+          }
+        } catch {}
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     vkBridge.send("VKWebAppInit").catch(() => {});
