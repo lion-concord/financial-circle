@@ -1,6 +1,7 @@
 import "dotenv/config";
 import express from "express";
 import authRouter from "./modules/auth/auth.router.js";
+import usersRouter from "./modules/users/users.router.js";
 import billingRouter from "./modules/billing/tariffs.router.js";
 import subscriptionsRouter from "./modules/billing/subscriptions.router.js";
 import paymentsRouter from "./modules/billing/payments.router.js";
@@ -14,6 +15,7 @@ app.get("/health", (_req, res) => {
 });
 
 app.use("/auth", authRouter);
+app.use("/", usersRouter);
 app.use("/", billingRouter);
 app.use("/", subscriptionsRouter);
 app.use("/", paymentsRouter);
