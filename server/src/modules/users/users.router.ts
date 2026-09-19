@@ -1,17 +1,18 @@
 import { Router, Response } from "express";
-import { authenticateToken, AuthRequest } from "../../lib/auth.middleware.js";
+import { requireAuth } from "../../lib/auth.middleware.js";
 
 const router = Router();
 
 // GET /me — текущий пользователь
-router.get("/me", authenticateToken, async (req: AuthRequest, res: Response) => {
+router.get("/me", requireAuth, async (req: any, res: Response) => {
   try {
-    // TODO: достать юзера из БД по req.user.userId
+    const _userId = req.user?.userId; // из verifyToken()
+    // TODO: достать баланс/подписку/рефералы из БД по _userId
     res.json({
       balance: 0,
       hold: 8700,
       referrals: 0,
-      subscription: "free"
+      subscription: "free",
     });
   } catch (err) {
     console.error("[users/me]", err);
@@ -20,8 +21,10 @@ router.get("/me", authenticateToken, async (req: AuthRequest, res: Response) => 
 });
 
 // GET /me/operations — история операций
-router.get("/me/operations", authenticateToken, async (req: AuthRequest, res: Response) => {
+router.get("/me/operations", requireAuth, async (req: any, res: Response) => {
   try {
+    const _userId = req.user?.userId;
+    // TODO: достать операции из БД по _userId
     res.json([]);
   } catch (err) {
     console.error("[users/operations]", err);
