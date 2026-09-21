@@ -142,24 +142,6 @@ export default function App() {
       .catch(() => {});
   }, []);
 
-  useEffect(() => {
-    vkBridge.send("VKWebAppInit").catch(() => {});
-    vkBridge
-      .send("VKWebAppGetUserInfo")
-      .then((data) => {
-        if (data && data.first_name) {
-          setVkUser({
-            name: `${data.first_name} ${data.last_name || ""}`.trim(),
-            photo: data.photo_200,
-            id: data.id,
-          });
-        }
-      })
-      .catch(() => {
-        // Если не в ВК, останется дефолтный профиль
-      });
-  }, []);
-
   const total = useMemo(() => state.balance + state.hold, [state]);
 
   function chooseTariff(name: string, price: number) {
@@ -172,7 +154,7 @@ export default function App() {
   }
 
   async function copyReferral() {
-    const appId = "53123456"; // Замените при необходимости на реальный ID приложения из ВК
+    const appId = "53123456";
     const userId = vkUser?.id || "2481";
     const link = `https://vk.com/app${appId}?ref=fc_${userId}`;
 
@@ -197,7 +179,7 @@ export default function App() {
       return;
     }
     if (amount > state.balance) {
-    setNotice("Сумма превышает доступный баланс");
+      setNotice("Сумма превышает доступный баланс");
       return;
     }
 
