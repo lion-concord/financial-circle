@@ -1,0 +1,8 @@
+                    {activeTab === "club" && (
+                      <ClubScreen
+                        current={state.subscription}
+                        onChoose={chooseTariff}
+                        onOpenChat={() => setActiveTab("chat")}
+                        onOpenWebinars={() => setActiveTab("webinars")}
+                      />
+                    )}

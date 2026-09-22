@@ -1,0 +1,14 @@
+
+                    {activeTab === "chat" && (
+                      <ChatScreen
+                        current={state.subscription}
+                        onBack={() => setActiveTab("club")}
+                      />
+                    )}
+
+                    {activeTab === "webinars" && (
+                      <WebinarsScreen
+                        current={state.subscription}
+                        onBack={() => setActiveTab("club")}
+                      />
+                    )}

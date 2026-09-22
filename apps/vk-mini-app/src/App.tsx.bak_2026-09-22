@@ -13,7 +13,7 @@ import vkBridge from "@vkontakte/vk-bridge";
 import { api, setToken } from "./api";
 import "./styles.css";
 
-type Tab = "home" | "club" | "referrals" | "profile" | "chat" | "webinars";
+type Tab = "home" | "club" | "referrals" | "profile";
 
 type OperationItem = {
   id: string;
@@ -142,24 +142,6 @@ export default function App() {
       .catch(() => {});
   }, []);
 
-  useEffect(() => {
-    vkBridge.send("VKWebAppInit").catch(() => {});
-    vkBridge
-      .send("VKWebAppGetUserInfo")
-      .then((data) => {
-        if (data && data.first_name) {
-          setVkUser({
-            name: `${data.first_name} ${data.last_name || ""}`.trim(),
-            photo: data.photo_200,
-            id: data.id,
-          });
-        }
-      })
-      .catch(() => {
-        // Если не в ВК, останется дефолтный профиль
-      });
-  }, []);
-
   const total = useMemo(() => state.balance + state.hold, [state]);
 
   function chooseTariff(name: string, price: number) {
@@ -172,7 +154,7 @@ export default function App() {
   }
 
   async function copyReferral() {
-    const appId = "53123456"; // Замените при необходимости на реальный ID приложения из ВК
+    const appId = "53123456";
     const userId = vkUser?.id || "2481";
     const link = `https://vk.com/app${appId}?ref=fc_${userId}`;
 
@@ -197,7 +179,7 @@ export default function App() {
       return;
     }
     if (amount > state.balance) {
-    setNotice("Сумма превышает доступный баланс");
+      setNotice("Сумма превышает доступный баланс");
       return;
     }
 
@@ -252,10 +234,9 @@ export default function App() {
                       <ClubScreen
                         current={state.subscription}
                         onChoose={chooseTariff}
-                        onOpenChat={() => setActiveTab("chat")}
-                        onOpenWebinars={() => setActiveTab("webinars")}
                       />
                     )}
+
                     {activeTab === "referrals" && (
                       <ReferralsScreen
                         count={state.referrals}
@@ -272,20 +253,6 @@ export default function App() {
                           setState(INITIAL_STATE);
                           setNotice("Локальные данные сброшены");
                         }}
-                      />
-                    )}
-
-                    {activeTab === "chat" && (
-                      <ChatScreen
-                        current={state.subscription}
-                        onBack={() => setActiveTab("club")}
-                      />
-                    )}
-
-                    {activeTab === "webinars" && (
-                      <WebinarsScreen
-                        current={state.subscription}
-                        onBack={() => setActiveTab("club")}
                       />
                     )}
                   </main>
@@ -436,13 +403,9 @@ function HomeScreen({
 function ClubScreen({
   current,
   onChoose,
-  onOpenChat,
-  onOpenWebinars,
 }: {
   current: string | null;
   onChoose: (name: string, price: number) => void;
-  onOpenChat: () => void;
-  onOpenWebinars: () => void;
 }) {
   return (
     <>
@@ -471,30 +434,10 @@ function ClubScreen({
           </article>
         ))}
       </div>
-
-      {(current === "Инвестор" || current === "Инвестор Про") && (
-        <section className="section">
-          <div className="section-heading">
-            <h2>Возможности клуба</h2>
-          </div>
-          <div className="actions-grid">
-            <button className="action-card" onClick={onOpenChat}>
-              <span className="action-icon">💬</span>
-              <b>Чат участников</b>
-              <small>Общайтесь и делитесь опытом</small>
-            </button>
-            <button className="action-card" onClick={onOpenWebinars}>
-              <span className="action-icon">🎓</span>
-              <b>Вебинары</b>
-              <small>Записи и расписание</small>
-            </button>
-          </div>
-        </section>
-      )}
     </>
   );
-
 }
+
 function ReferralsScreen({
   count,
   onCopy,
@@ -569,81 +512,6 @@ function ProfileScreen({
       <div className="profile-row"><span>Всего операций</span><b>{operationsCount}</b></div>
       <button className="outline-button" onClick={onReset}>Сбросить локальные данные</button>
       <p className="disclaimer">Демонстрационный режим. Данные сохранены только на этом устройстве.</p>
-    </>
-  );
-}
-
-
-function ChatScreen({
-  current,
-  onBack,
-}: {
-  current: string | null;
-  onBack: () => void;
-}) {
-  const hasAccess = current === "Инвестор" || current === "Инвестор Про";
-
-  return (
-    <>
-      <PageTitle title="Чат участников" subtitle="Общайтесь с участниками клуба" />
-      {!hasAccess ? (
-        <section className="section">
-          <div className="info-card">
-            <span className="info-icon">🔒</span>
-            <h3>Доступ ограничен</h3>
-            <p>Чат доступен участникам тарифов «Инвестор» и «Инвестор Про»</p>
-            <button className="gold-button" onClick={onBack}>Выбрать тариф</button>
-          </div>
-        </section>
-      ) : (
-        <section className="section">
-          <div className="info-card">
-            <span className="info-icon">💬</span>
-            <h3>Добро пожаловать в чат!</h3>
-            <p>Здесь участники клуба обсуждают инвестиции, делятся опытом и получают эксклюзивную информацию.</p>
-            <div style={{ marginTop: "1rem", padding: "1rem", background: "rgba(255,255,255,0.05)", borderRadius: "8px" }}>
-              <small style={{ color: "#999" }}>Функционал чата в разработке. Скоро здесь появятся сообщения участников.</small>
-            </div>
-          </div>
-        </section>
-      )}
-    </>
-  );
-}
-
-function WebinarsScreen({
-  current,
-  onBack,
-}: {
-  current: string | null;
-  onBack: () => void;
-}) {
-  const hasAccess = current === "Инвестор" || current === "Инвестор Про";
-
-  return (
-    <>
-      <PageTitle title="Вебинары" subtitle="Обучение и записи мероприятий" />
-      {!hasAccess ? (
-        <section className="section">
-          <div className="info-card">
-            <span className="info-icon">🔒</span>
-            <h3>Доступ ограничен</h3>
-            <p>Вебинары доступны участникам тарифов «Инвестор» и «Инвестор Про»</p>
-            <button className="gold-button" onClick={onBack}>Выбрать тариф</button>
-          </div>
-        </section>
-      ) : (
-        <section className="section">
-          <div className="info-card">
-            <span className="info-icon">🎓</span>
-            <h3>Библиотека вебинаров</h3>
-            <p>Доступ к записям закрытых вебинаров, обучающим материалам и расписанию предстоящих мероприятий.</p>
-            <div style={{ marginTop: "1rem", padding: "1rem", background: "rgba(255,255,255,0.05)", borderRadius: "8px" }}>
-              <small style={{ color: "#999" }}>📅 Расписание и архив записей появятся в ближайшее время.</small>
-            </div>
-          </div>
-        </section>
-      )}
     </>
   );
 }

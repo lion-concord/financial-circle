@@ -436,13 +436,9 @@ function HomeScreen({
 function ClubScreen({
   current,
   onChoose,
-  onOpenChat,
-  onOpenWebinars,
 }: {
   current: string | null;
   onChoose: (name: string, price: number) => void;
-  onOpenChat: () => void;
-  onOpenWebinars: () => void;
 }) {
   return (
     <>
@@ -471,30 +467,10 @@ function ClubScreen({
           </article>
         ))}
       </div>
-
-      {(current === "Инвестор" || current === "Инвестор Про") && (
-        <section className="section">
-          <div className="section-heading">
-            <h2>Возможности клуба</h2>
-          </div>
-          <div className="actions-grid">
-            <button className="action-card" onClick={onOpenChat}>
-              <span className="action-icon">💬</span>
-              <b>Чат участников</b>
-              <small>Общайтесь и делитесь опытом</small>
-            </button>
-            <button className="action-card" onClick={onOpenWebinars}>
-              <span className="action-icon">🎓</span>
-              <b>Вебинары</b>
-              <small>Записи и расписание</small>
-            </button>
-          </div>
-        </section>
-      )}
     </>
   );
-
 }
+
 function ReferralsScreen({
   count,
   onCopy,

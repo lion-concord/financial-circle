@@ -1,0 +1,20 @@
+
+      {(current === "Инвестор" || current === "Инвестор Про") && (
+        <section className="section">
+          <div className="section-heading">
+            <h2>Возможности клуба</h2>
+          </div>
+          <div className="actions-grid">
+            <button className="action-card" onClick={onOpenChat}>
+              <span className="action-icon">💬</span>
+              <b>Чат участников</b>
+              <small>Общайтесь и делитесь опытом</small>
+            </button>
+            <button className="action-card" onClick={onOpenWebinars}>
+              <span className="action-icon">🎓</span>
+              <b>Вебинары</b>
+              <small>Записи и расписание</small>
+            </button>
+          </div>
+        </section>
+      )}

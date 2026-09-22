@@ -1,0 +1,75 @@
+
+function ChatScreen({
+  current,
+  onBack,
+}: {
+  current: string | null;
+  onBack: () => void;
+}) {
+  const hasAccess = current === "Инвестор" || current === "Инвестор Про";
+
+  return (
+    <>
+      <PageTitle title="Чат участников" subtitle="Общайтесь с участниками клуба" />
+      {!hasAccess ? (
+        <section className="section">
+          <div className="info-card">
+            <span className="info-icon">🔒</span>
+            <h3>Доступ ограничен</h3>
+            <p>Чат доступен участникам тарифов «Инвестор» и «Инвестор Про»</p>
+            <button className="gold-button" onClick={onBack}>Выбрать тариф</button>
+          </div>
+        </section>
+      ) : (
+        <section className="section">
+          <div className="info-card">
+            <span className="info-icon">💬</span>
+            <h3>Добро пожаловать в чат!</h3>
+            <p>Здесь участники клуба обсуждают инвестиции, делятся опытом и получают эксклюзивную информацию.</p>
+            <div style={{ marginTop: "1rem", padding: "1rem", background: "rgba(255,255,255,0.05)", borderRadius: "8px" }}>
+              <small style={{ color: "#999" }}>Функционал чата в разработке. Скоро здесь появятся сообщения участников.</small>
+            </div>
+          </div>
+        </section>
+      )}
+    </>
+  );
+}
+
+function WebinarsScreen({
+  current,
+  onBack,
+}: {
+  current: string | null;
+  onBack: () => void;
+}) {
+  const hasAccess = current === "Инвестор" || current === "Инвестор Про";
+
+  return (
+    <>
+      <PageTitle title="Вебинары" subtitle="Обучение и записи мероприятий" />
+      {!hasAccess ? (
+        <section className="section">
+          <div className="info-card">
+            <span className="info-icon">🔒</span>
+            <h3>Доступ ограничен</h3>
+            <p>Вебинары доступны участникам тарифов «Инвестор» и «Инвестор Про»</p>
+            <button className="gold-button" onClick={onBack}>Выбрать тариф</button>
+          </div>
+        </section>
+      ) : (
+        <section className="section">
+          <div className="info-card">
+            <span className="info-icon">🎓</span>
+            <h3>Библиотека вебинаров</h3>
+            <p>Доступ к записям закрытых вебинаров, обучающим материалам и расписанию предстоящих мероприятий.</p>
+            <div style={{ marginTop: "1rem", padding: "1rem", background: "rgba(255,255,255,0.05)", borderRadius: "8px" }}>
+              <small style={{ color: "#999" }}>📅 Расписание и архив записей появятся в ближайшее время.</small>
+            </div>
+          </div>
+        </section>
+      )}
+    </>
+  );
+}
+
